@@ -41,14 +41,14 @@ mount -o bind /dev ${chroot_dir}/dev
 # apk add ca-certificates wget && update-ca-certificates
 # mkdir -p /root/repos/gen-pixel_rpi
 # cd /root/repos/gen-pixel_rpi
-# wget https://gist.github.com/yangxuan8282/774b68c33ebb9669d0b6e72a8d488f18/raw/ed401a4e7ed177eb6334b74659699b9409c28d37/gen-pixel_rpi.sh && chmod +x gen-pixel_rpi.sh 
+# wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-pixel_rpi.sh && chmod +x gen-pixel_rpi.sh 
 # ./gen-pixel_rpi.sh
 
 # apk --update add util-linux dosfstools e2fsprogs vim
 # apk add ca-certificates wget && update-ca-certificates
 # mkdir -p /root/repos/gen-arch_rpi
 # cd /root/repos/gen-arch_rpi
-# wget https://gist.github.com/yangxuan8282/774b68c33ebb9669d0b6e72a8d488f18/raw/ed401a4e7ed177eb6334b74659699b9409c28d37/gen-arch_rpi.sh && chmod +x gen-arch_rpi.sh
+# wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-arch_rpi.sh && chmod +x gen-arch_rpi.sh
 # mkdir -p /etc/pacman.d
 # wget https://github.com/archlinuxarm/PKGBUILDs/raw/009a908c4bae6b95a82baa89d214c5c22730bea4/core/pacman/pacman.conf -O /etc/pacman.conf
 # sed -i 's/Architecture =.*/Architecture = armv7h/' /etc/pacman.conf
