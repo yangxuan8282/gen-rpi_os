@@ -219,8 +219,7 @@ install_xfce4_mods() {
 	curl https://img2.goodfon.com/original/2048x1820/3/b6/android-5-0-lollipop-material-5355.jpg \
 					--output /usr/share/wallpapers/android-5-0-lollipop-material-5355.jpg
 	git clone https://github.com/yangxuan8282/dotfiles /home/alarm/src/dotfiles
-	cp -a /home/alarm/src/dotfiles/config /home/alarm/.config
-	chown -R alarm:alarm /home/alarm/.config
+	su alarm sh -c "cp -a /home/alarm/src/dotfiles/config/xfce4 /home/alarm/.config/"
 	rm -rf /home/alarm/src/dotfiles
 }
 

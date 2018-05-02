@@ -45,6 +45,8 @@ mount -o bind /dev ${chroot_dir}/dev
 # ./gen-pixel_rpi.sh
 
 # apk --update add util-linux dosfstools e2fsprogs vim
+# echo "http://mirrors.ustc.edu.cn/alpine/v3.7/community" >> /etc/apk/repositories
+# apk --update add arch-install-scripts
 # apk add ca-certificates wget && update-ca-certificates
 # mkdir -p /root/repos/gen-arch_rpi
 # cd /root/repos/gen-arch_rpi
