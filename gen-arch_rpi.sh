@@ -220,7 +220,7 @@ install_xfce4_mods() {
 					--output /usr/share/wallpapers/android-5-0-lollipop-material-5355.jpg
 	git clone https://github.com/yangxuan8282/dotfiles /home/alarm/src/dotfiles
 	su alarm sh -c "cp -a /home/alarm/src/dotfiles/config/xfce4 /home/alarm/.config/"
-	rm -rf /home/alarm/src/dotfiles
+	rm -rf /home/alarm/src
 }
 
 install_termite() {
