@@ -12,10 +12,22 @@ if [ "$(id -u)" -ne 0 ]; then
 	die 'This script must be run as root!'
 fi
 
+which wget > /dev/null || die 'please install wget first'
+
+cd "$(dirname "$0")"
+
+DEST=$(pwd)
+
+_distro=$1
 mirror="http://mirrors.ustc.edu.cn/alpine"
 branch="v3.7"
 arch="armhf"
-chroot_dir="mnt"
+chroot_dir="$DEST/mnt"
+
+if [ -z "$_distro" ]
+	then
+		die 'No distro supplied, please choose from: pixel/debian, arch/archlinuxarm/alarm'
+fi
 
 mkdir -p ${chroot_dir}
 
@@ -40,7 +52,7 @@ mount_devices() {
 
 umount_devices() {
 	umount ${chroot_dir}/proc
-	umount ${chroot_dir}/proc
+	umount ${chroot_dir}/sys
 	umount ${chroot_dir}/dev
 }
 
@@ -81,8 +93,10 @@ EOF
 
 mount_devices
 
-gen_rpi_pixel_image
-
-gen_rpi_arch_image
+case $_distro in
+	             debian | pixel ) gen_rpi_pixel_image && mv ${chroot_dir}/root/repos/gen-pixel_rpi/*.img ${DEST}/ ;;
+	arch | archlinuxarm | alarm ) gen_rpi_arch_image && mv ${chroot_dir}/root/repos/gen-arch_rpi/*.img ${DEST}/ ;;
+	                          * ) die 'Invalid distro, please choose from: pixel/debian, arch/archlinuxarm/alarm ';;
+esac
 
 umount_devices
