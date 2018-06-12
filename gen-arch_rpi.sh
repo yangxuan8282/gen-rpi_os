@@ -257,8 +257,6 @@ setup_chroot() {
 		rm -f /root/functions /root/env_file
 		pacman -Syu --noconfirm
 		pacman-key --init
-		pacman -S --noconfirm archlinuxarm-keyring
-		pacman-key --populate archlinuxarm
 		echo "root:toor" | chpasswd
 		add_sudo_user
 		install_kernel
