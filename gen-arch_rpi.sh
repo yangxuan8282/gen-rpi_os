@@ -266,6 +266,7 @@ setup_chroot() {
 		install_docker
 		enable_systemd_timesyncd
 		pacman -S --noconfirm packer
+		pacman -S --noconfirm nfs-utils
 		install_drivers
 		add_vchiq_udev_rules > /etc/udev/rules.d/raspberrypi.rules
 		install_ssh_server
