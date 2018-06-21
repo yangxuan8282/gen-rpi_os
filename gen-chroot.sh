@@ -100,8 +100,7 @@ gen_rpi_alpine_image() {
 		apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
 		mkdir -p /root/repos/gen-alpine_rpi
 		apk add ca-certificates wget && update-ca-certificates
-		#wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-alpine_rpi.sh 
-		wget http://192.168.2.106:8000/gen-alpine_rpi.sh -O /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
+		wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-alpine_rpi.sh -O /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
 		chmod +x /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
 		cd /root/repos/gen-alpine_rpi
 		./gen-alpine_rpi.sh -a $(apk --print)
