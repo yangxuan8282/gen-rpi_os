@@ -20,7 +20,7 @@ BUILD_DATE="$(date +%Y-%m-%d)"
 usage() {
 	cat <<EOF
 
-	Usage: gen-pixel.sh [options]
+	Usage: gen-pixel_rpi.sh [options]
 
 	Valid options are:
 		-b DEBIAN_BRANCH        Debian branch to install (default is stretch).

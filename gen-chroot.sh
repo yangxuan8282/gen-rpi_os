@@ -21,13 +21,15 @@ DEST=$(pwd)
 _distro=$1
 mirror="http://mirrors.ustc.edu.cn/alpine"
 branch="v3.7"
-arch="armhf"
+arch=$2
 chroot_dir="$DEST/mnt"
 
 if [ -z "$_distro" ]
 	then
 		die 'No distro supplied, please choose from: pixel/debian, arch/archlinuxarm/alarm'
 fi
+
+: ${arch:="armhf"}
 
 mkdir -p ${chroot_dir}
 
@@ -91,11 +93,27 @@ gen_rpi_arch_image() {
 EOF
 }
 
+gen_rpi_alpine_image() {
+	chroot ${chroot_dir} /bin/sh <<-'EOF'
+		set -xe
+		source /etc/profile
+		apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
+		mkdir -p /root/repos/gen-alpine_rpi
+		apk add ca-certificates wget && update-ca-certificates
+		#wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-alpine_rpi.sh 
+		wget http://192.168.2.106:8000/gen-alpine_rpi.sh -O /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
+		chmod +x /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
+		cd /root/repos/gen-alpine_rpi
+		./gen-alpine_rpi.sh -a $(apk --print)
+EOF
+}
+
 mount_devices
 
 case $_distro in
 	             debian | pixel ) gen_rpi_pixel_image && mv ${chroot_dir}/root/repos/gen-pixel_rpi/*.img ${DEST}/ ;;
 	arch | archlinuxarm | alarm ) gen_rpi_arch_image && mv ${chroot_dir}/root/repos/gen-arch_rpi/*.img ${DEST}/ ;;
+	                     alpine ) gen_rpi_alpine_image && mv ${chroot_dir}/root/repos/gen-alpine_rpi/*.img ${DEST}/ ;;
 	                          * ) die 'Invalid distro, please choose from: pixel/debian, arch/archlinuxarm/alarm ';;
 esac
 

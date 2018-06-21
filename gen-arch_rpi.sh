@@ -19,7 +19,7 @@ BUILD_DATE="$(date +%Y-%m-%d)"
 
 usage() {
 	cat <<EOF
-	Usage: gen-arch.sh [options]
+	Usage: gen-arch_rpi.sh [options]
 	Valid options are:
 		-m ARCH_MIRROR          URI of the mirror to fetch packages from
 		                        (default is https://mirrors.ustc.edu.cn/archlinuxarm).

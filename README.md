@@ -13,7 +13,7 @@ How to use:
 for archlinuxarm:
 
 ```
-sudo ./gen-chroot alarm
+sudo ./gen-chroot.sh alarm
 ```
 
 and there is a `bkup_alarm.sh`, for backup image made by `gen-arch_rpi.sh`
@@ -21,5 +21,16 @@ and there is a `bkup_alarm.sh`, for backup image made by `gen-arch_rpi.sh`
 for debian/raspbian:
 
 ```
-sudo ./gen-chroot debian
+sudo ./gen-chroot.sh debian
+```
+for alpine armhf:
+
+```
+sudo ./gen-chroot.sh alpine
+```
+
+for alpine aarch64:
+
+```
+sudo ./gen-chroot.sh alpine aarch64
 ```
