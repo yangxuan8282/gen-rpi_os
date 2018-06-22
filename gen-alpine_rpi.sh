@@ -43,6 +43,7 @@ done
 : ${ALPINE_MIRROR:="https://mirrors.ustc.edu.cn/alpine"}
 : ${OUTPUT_IMG:="${BUILD_DATE}-alpine-rpi-${ALPINE_ARCH}.img"}
 
+
 #=======================  F u n c t i o n s  =======================#
 
 gen_image() {
@@ -111,7 +112,6 @@ add_user_groups() {
 
 gen_config_txt_32b() {
         cat > /boot/config.txt <<EOF
-disable_splash=0
 boot_delay=0
 gpu_mem=256
 gpu_mem_256=64
@@ -134,7 +134,6 @@ EOF
 
 gen_config_txt_64b() {
         cat > /boot/config.txt <<EOF
-disable_splash=0
 boot_delay=0
 gpu_mem=256
 gpu_mem_256=64
@@ -163,7 +162,16 @@ gen_usercfg_txt() {
 	cat > /boot/usercfg.txt <<EOF
 enable_uart=1
 
+disable_overscan=1
+
 dtparam=sd_overclock=100
+
+# for sound over HDMI
+hdmi_drive=2
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+
 EOF
 }
 
@@ -289,6 +297,32 @@ install_kernel() {
 	find . -type f -regex ".*\.dtbo\?$" -exec install -Dm644 {} /boot/{} \;
 }
 
+install_xorg_driver() {
+	apk add xorg-server xf86-video-fbdev xf86-input-libinput
+}
+
+install_xfce4() {
+
+	install_xorg_driver
+
+	apk add xfce4 xfce4-mixer xfce4-wavelan-plugin lxdm paper-icon-theme arc-theme \
+		gvfs gvfs-smb sshfs \
+        	network-manager-applet gnome-keyring
+
+	mkdir -p /usr/share/wallpapers &&
+	curl https://img2.goodfon.com/original/2048x1820/3/b6/android-5-0-lollipop-material-5355.jpg \
+		--output /usr/share/wallpapers/android-5-0-lollipop-material-5355.jpg
+
+	su pi sh -c 'mkdir -p /home/pi/.config && \
+	wget https://github.com/yangxuan8282/dotfiles/archive/master.tar.gz -O- | \
+		tar -C /home/pi/.config -xzf - --strip=2 dotfiles-master/alpine-config'
+
+	sed -i 's/^# autologin=dgod/autologin=pi/' /etc/lxdm/lxdm.conf
+	sed -i 's|^# session=/usr/bin/startlxde|session=/usr/bin/startxfce4|' /etc/lxdm/lxdm.conf
+
+	rc-update add lxdm default
+}
+
 # take from postmarketOS
 
 setup_openrc_service() {
@@ -359,7 +393,7 @@ setup_chroot() {
 		echo "127.0.0.1    raspberrypi raspberrypi.localdomain" > /etc/hosts
 		apk add dbus eudev haveged chrony openssh util-linux shadow e2fsprogs e2fsprogs-extra tzdata
 		apk add iw wireless-tools crda wpa_supplicant networkmanager
-		apk add nano htop bash bash-completion curl
+		apk add nano htop bash bash-completion curl tar
 		apk add ca-certificates wget && update-ca-certificates
 		setup_openrc_service
 		add_user_groups
@@ -379,7 +413,7 @@ setup_chroot() {
 		gen_cmdline_txt
 		gen_config_txt
 		gen_usercfg_txt
-        make_bash_fancy
+		make_bash_fancy
 EOF
 }
 
