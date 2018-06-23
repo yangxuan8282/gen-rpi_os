@@ -160,7 +160,7 @@ gen_config_txt() {
 
 gen_usercfg_txt() {
 	cat > /boot/usercfg.txt <<EOF
-enable_uart=1
+#enable_uart=1
 
 disable_overscan=1
 
@@ -201,7 +201,7 @@ gen_cmdline_txt() {
 }
 
 setup_ntp_server() {
-	sed -i 's/pool.ntp.org/cn.pool.ntp.org/' /etc/chrony/chrony.conf
+	sed -i 's/pool.ntp.org/cn.pool.ntp.org/' /etc/init.d/ntpd
 }
 
 add_vchiq_udev_rules() {
@@ -211,29 +211,6 @@ add_vchiq_udev_rules() {
 SUBSYSTEM=="vchiq|input", MODE="0777"
 KERNEL=="mouse*|mice|event*",  MODE="0777"
 EOF
-}
-
-gen_restart_chronyd_once_service() {
-	cat > /etc/init.d/restart-chronyd-once <<'EOF'
-#!/sbin/openrc-run
-command="/usr/bin/restart-chronyd-once"
-command_background=false
-depend() {
-        after local
-        need networkmanager
-}
-EOF
-
-	cat > /usr/bin/restart-chronyd-once <<'EOF'
-#!/bin/sh
-# seems need to restart chronyd once after first boot
-set -xe
-rc-service chronyd restart
-rc-update del restart-chronyd-once default
-EOF
-
-	chmod +x /usr/bin/restart-chronyd-once /etc/init.d/restart-chronyd-once
-	rc-update add restart-chronyd-once default
 }
 
 gen_resize2fs_once_service() {
@@ -267,6 +244,7 @@ rm -f /tmp/fdisk.cmd
 partprobe
 resize2fs "$ROOT_DEV"
 rc-update del resize2fs-once default
+reboot
 EOF
 
 chmod +x /etc/init.d/resize2fs-once /usr/bin/resize2fs-once
@@ -336,7 +314,7 @@ setup_openrc_service() {
 		rc-update add $service boot
 	done
 
-	for service in dbus haveged sshd wpa_supplicant chronyd local networkmanager; do
+	for service in dbus haveged sshd wpa_supplicant ntpd local networkmanager; do
 		rc-update add $service default
 	done
 
@@ -391,7 +369,7 @@ setup_chroot() {
 		add_normal_user
 		echo "raspberrypi" > /etc/hostname
 		echo "127.0.0.1    raspberrypi raspberrypi.localdomain" > /etc/hosts
-		apk add dbus eudev haveged chrony openssh util-linux shadow e2fsprogs e2fsprogs-extra tzdata
+		apk add dbus eudev haveged openssh util-linux coreutils shadow e2fsprogs e2fsprogs-extra tzdata
 		apk add iw wireless-tools crda wpa_supplicant networkmanager
 		apk add nano htop bash bash-completion curl tar
 		apk add ca-certificates wget && update-ca-certificates
@@ -408,12 +386,12 @@ setup_chroot() {
 		#get_rpi_firmware
 		add_vchiq_udev_rules
 		gen_resize2fs_once_service
-		gen_restart_chronyd_once_service
 		#apk add omxplayer
 		gen_cmdline_txt
 		gen_config_txt
 		gen_usercfg_txt
 		make_bash_fancy
+		#install_xfce4
 EOF
 }
 
