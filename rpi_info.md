@@ -3,6 +3,14 @@ raspberry pi
 
 - binary blobs
 
+	- fixup.dat, start.elf: the most common use one
+
+	- fixup_cd.dat, start_cd.elf: used when GPU memory is set to 16 MB 
+
+	- fixup_x.dat, start_x.elf: with experimental support for more free codecs
+
+	- start_db.elf, fixup_db.dat: debug use
+
 arm board dosen't came with BIOS, instead they have blobs from vendor 
 
 and which is closed source
@@ -18,14 +26,6 @@ start.elf
 we can get it from this repos: https://github.com/raspberrypi/firmware/tree/master/boot
 
 they usually put in `/boot` directory 
-
-- fixup.dat, start.elf: the most common use one
-
-- fixup_cd.dat, start_cd.elf: used when GPU memory is set to 16 MB 
-
-- fixup_x.dat, start_x.elf: with experimental support for more free codecs
-
-- start_db.elf, fixup_db.dat: debug use
 
 - bootloader
 
