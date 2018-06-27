@@ -23,7 +23,7 @@ they usually put in `/boot` directory
 
 - fixup_cd.dat, start_cd.elf: used when GPU memory is set to 16 MB 
 
-- fixup_x.dat, start_x.elf: with expeimenal support for more free codecs
+- fixup_x.dat, start_x.elf: with experimental support for more free codecs
 
 - start_db.elf, fixup_db.dat: debug use
 
