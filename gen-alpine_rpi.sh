@@ -23,7 +23,7 @@ usage() {
 	Valid options are:
 		-a ALPINE_ARCH          Options: armhf, aarch64.
 		-m ALPINE_MIRROR        URI of the mirror to fetch packages from
-		                        (default is https://mirrors.ustc.edu.cn/alpine).
+		                        (default is https://mirrors.tuna.tsinghua.edu.cn/alpine).
 		-o OUTPUT_IMG           Output img file
 		                        (default is BUILD_DATE-alpine-rpi-ARCH.img).
 		-h                      Show this help message and exit.
@@ -40,7 +40,7 @@ while getopts 'a:m:o:h' OPTION; do
 done 
 
 : ${ALPINE_ARCH:="$(uname -m)"}
-: ${ALPINE_MIRROR:="https://mirrors.ustc.edu.cn/alpine"}
+: ${ALPINE_MIRROR:="https://mirrors.tuna.tsinghua.edu.cn/alpine"}
 : ${OUTPUT_IMG:="${BUILD_DATE}-alpine-rpi-${ALPINE_ARCH}.img"}
 
 
@@ -244,7 +244,7 @@ rm -f /tmp/fdisk.cmd
 partprobe
 resize2fs "$ROOT_DEV"
 rc-update del resize2fs-once default
-reboot
+#reboot
 EOF
 
 chmod +x /etc/init.d/resize2fs-once /usr/bin/resize2fs-once

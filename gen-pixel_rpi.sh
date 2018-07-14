@@ -25,7 +25,7 @@ usage() {
 	Valid options are:
 		-b DEBIAN_BRANCH        Debian branch to install (default is stretch).
 		-m DEBIAN_MIRROR        URI of the mirror to fetch packages from
-					(default is http://mirrors.ustc.edu.cn/debian/).
+					(default is http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/).
 		-o OUTPUT_IMG           Output img file
 					(default is BUILD_DATE-pixel-rpi-ARCH-DEBIAN_BRANCH.img).
 		-h                      Show this help message and exit.
@@ -42,7 +42,7 @@ while getopts 'b:m:o:h' OPTION; do
 done 
 
 : ${DEBIAN_BRANCH:="stretch"}
-: ${DEBIAN_MIRROR:="http://mirrors.ustc.edu.cn/debian/"}
+: ${DEBIAN_MIRROR:="http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/"}
 : ${OUTPUT_IMG:="${BUILD_DATE}-pixel-rpi-${DEBIAN_BRANCH}.img"}
 
 #=======================  F u n c t i o n s  =======================#
@@ -80,7 +80,7 @@ do_format() {
 }
 
 do_debootstrap() {
-	debootstrap --arch="armhf" "$DEBIAN_BRANCH" mnt "$DEBIAN_MIRROR"
+	debootstrap --no-check-gpg --arch="armhf" "$DEBIAN_BRANCH" mnt "$DEBIAN_MIRROR"
 }
 
 gen_wpa_supplicant_conf() {
@@ -175,13 +175,14 @@ setup_chroot() {
 		echo raspberrypi > /etc/hostname
 		echo "127.0.1.1    raspberrypi.localdomain    raspberrypi" | tee --append /etc/hosts
 		apt-get install -y dirmngr
-		echo "deb http://mirrors.ustc.edu.cn/raspbian/raspbian/ ${DEBIAN_BRANCH} main contrib non-free rpi" > /etc/apt/sources.list
-		echo "deb http://mirrors.ustc.edu.cn/archive.raspberrypi.org/debian/ ${DEBIAN_BRANCH} main ui" > /etc/apt/sources.list.d/raspi.list
+		echo "deb http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/ ${DEBIAN_BRANCH} main contrib non-free rpi" > /etc/apt/sources.list
+		echo "deb http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ ${DEBIAN_BRANCH} main ui" > /etc/apt/sources.list.d/raspi.list
 		apt-key adv --keyserver keyserver.ubuntu.com --recv 9165938D90FDDD2E
 		apt-key adv --keyserver keyserver.ubuntu.com --recv 82B129927FA3303E
 		apt-get update && apt-get upgrade -y
 		apt-get install -y ssh
 		apt-get install -y dhcpcd5 wpasupplicant net-tools wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods
+		apt-get install -y raspberrypi-kernel raspberrypi-bootloader
 		apt-get install -y raspberrypi-ui-mods lxterminal rpi-chromium-mods rc-gui raspi-config omxplayer fake-hwclock htop screen geany fcitx-pinyin fonts-wqy-zenhei
 		mv /etc/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 		sed -i '7s|^.*$|  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games"|' /etc/profile

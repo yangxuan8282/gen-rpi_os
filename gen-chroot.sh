@@ -19,8 +19,8 @@ cd "$(dirname "$0")"
 DEST=$(pwd)
 
 _distro=$1
-mirror="http://mirrors.ustc.edu.cn/alpine"
-branch="v3.7"
+mirror="https://mirrors.tuna.tsinghua.edu.cn/alpine"
+branch="v3.8"
 arch=$2
 chroot_dir="$DEST/mnt"
 
@@ -33,7 +33,7 @@ fi
 
 mkdir -p ${chroot_dir}
 
-wget ${mirror}/${branch}/main/${arch}/apk-tools-static-2.9.1-r2.apk
+wget ${mirror}/${branch}/main/${arch}/apk-tools-static-2.10.0-r0.apk
 
 tar -xzf apk-tools-static-*.apk
 
@@ -45,6 +45,9 @@ mkdir -p ${chroot_dir}/root
 mkdir -p ${chroot_dir}/etc/apk
 echo "${mirror}/${branch}/main" > ${chroot_dir}/etc/apk/repositories
 
+mkdir -p ${chroot_dir}/root/repos/gen-rpi_os
+
+cp *.sh ${chroot_dir}/root/repos/gen-rpi_os/
 
 mount_devices() {
 	mount -t proc none ${chroot_dir}/proc
@@ -65,9 +68,7 @@ gen_rpi_pixel_image() {
 		apk --update add util-linux dosfstools e2fsprogs debootstrap perl vim
 		mkdir -p /root/repos/gen-pixel_rpi
 		apk add ca-certificates wget && update-ca-certificates
-		wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-pixel_rpi.sh -O /root/repos/gen-pixel_rpi/gen-pixel_rpi.sh
-		chmod +x /root/repos/gen-pixel_rpi/gen-pixel_rpi.sh
-		cd /root/repos/gen-pixel_rpi
+		cd /root/repos/gen-rpi_os
 		./gen-pixel_rpi.sh
 EOF
 }
@@ -77,18 +78,16 @@ gen_rpi_arch_image() {
 		set -xe
 		source /etc/profile
 		apk --update add util-linux dosfstools e2fsprogs vim
-		echo "http://mirrors.ustc.edu.cn/alpine/v3.7/community" >> /etc/apk/repositories
+		echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/v3.8/community" >> /etc/apk/repositories
 		apk --update add arch-install-scripts
 		apk add ca-certificates wget && update-ca-certificates
 		mkdir -p /root/repos/gen-arch_rpi
-		wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-arch_rpi.sh -O /root/repos/gen-arch_rpi/gen-arch_rpi.sh
-		chmod +x /root/repos/gen-arch_rpi/gen-arch_rpi.sh
 		mkdir -p /etc/pacman.d
 		wget https://github.com/archlinuxarm/PKGBUILDs/raw/009a908c4bae6b95a82baa89d214c5c22730bea4/core/pacman/pacman.conf -O /etc/pacman.conf
 		sed -i 's/Architecture =.*/Architecture = armv7h/' /etc/pacman.conf
-		echo "Server = https://mirrors.ustc.edu.cn/archlinuxarm/\$arch/\$repo" > /etc/pacman.d/mirrorlist
+		echo "Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/\$arch/\$repo" > /etc/pacman.d/mirrorlist
 		mkdir -p /run/shm
-		cd /root/repos/gen-arch_rpi
+		cd /root/repos/gen-rpi_os
 		./gen-arch_rpi.sh
 EOF
 }
@@ -100,9 +99,7 @@ gen_rpi_alpine_image() {
 		apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
 		mkdir -p /root/repos/gen-alpine_rpi
 		apk add ca-certificates wget && update-ca-certificates
-		wget https://github.com/yangxuan8282/gen-rpi_os/raw/master/gen-alpine_rpi.sh -O /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
-		chmod +x /root/repos/gen-alpine_rpi/gen-alpine_rpi.sh
-		cd /root/repos/gen-alpine_rpi
+		cd /root/repos/gen-rpi_os
 		./gen-alpine_rpi.sh -a $(apk --print)
 EOF
 }
@@ -110,10 +107,12 @@ EOF
 mount_devices
 
 case $_distro in
-	             debian | pixel ) gen_rpi_pixel_image && mv ${chroot_dir}/root/repos/gen-pixel_rpi/*.img ${DEST}/ ;;
-	arch | archlinuxarm | alarm ) gen_rpi_arch_image && mv ${chroot_dir}/root/repos/gen-arch_rpi/*.img ${DEST}/ ;;
-	                     alpine ) gen_rpi_alpine_image && mv ${chroot_dir}/root/repos/gen-alpine_rpi/*.img ${DEST}/ ;;
+	             debian | pixel ) gen_rpi_pixel_image ;;
+	arch | archlinuxarm | alarm ) gen_rpi_arch_image ;;
+	                     alpine ) gen_rpi_alpine_image ;;
 	                          * ) die 'Invalid distro, please choose from: pixel/debian, arch/archlinuxarm/alarm ';;
 esac
+
+mv ${chroot_dir}/root/repos/gen-rpi_os/*.img ${DEST}/
 
 umount_devices

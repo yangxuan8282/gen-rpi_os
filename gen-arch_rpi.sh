@@ -22,7 +22,7 @@ usage() {
 	Usage: gen-arch_rpi.sh [options]
 	Valid options are:
 		-m ARCH_MIRROR          URI of the mirror to fetch packages from
-		                        (default is https://mirrors.ustc.edu.cn/archlinuxarm).
+		                        (default is https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm).
 		-o OUTPUT_IMG           Output img file
 		                        (default is BUILD_DATE-arch-rpi-xfce4-mods.img).
 		-h                      Show this help message and exit.
@@ -37,7 +37,7 @@ while getopts 'm:o:h' OPTION; do
 	esac
 done 
 
-: ${ARCH_MIRROR:="https://mirrors.ustc.edu.cn/archlinuxarm"}
+: ${ARCH_MIRROR:="https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm"}
 : ${OUTPUT_IMG:="${BUILD_DATE}-arch-rpi-xfce4-mods.img"}
 
 #=======================  F u n c t i o n s  =======================#
@@ -85,8 +85,8 @@ do_pacstrap() {
 	pacstrap mnt base base-devel 
 }
 
-gen_resize2fs_once_systemd() {
-	cat <<EOF
+gen_resize2fs_once_service() {
+	cat > /etc/systemd/system/resize2fs-once.service <<'EOF'
 [Unit]
 Description=Resize the root filesystem to fill partition
 DefaultDependencies=no
@@ -103,10 +103,8 @@ StandardError=tty
 [Install]
 WantedBy=sysinit.target
 EOF
-}
 
-gen_resize2fs_once_scripts() {
-	cat <<'EOF'
+	cat > /usr/local/bin/resize2fs_once <<'EOF'
 #!/bin/sh 
 set -xe
 ROOT_DEV=$(findmnt / -o source -n)
@@ -127,13 +125,18 @@ partprobe
 resize2fs "$ROOT_DEV"
 systemctl disable resize2fs-once
 EOF
+
+chmod +x /usr/local/bin/resize2fs_once
+systemctl enable resize2fs-once
 }
 
 gen_fstabs() {
-	genfstab -U mnt >> mnt/etc/fstab
-	sed -i "/\/ /s/[^ ]* /PARTUUID=${ROOT_PARTUUID}/1" mnt/etc/fstab
-	sed -i "/\/boot /s/[^ ]* /PARTUUID=${BOOT_PARTUUID}/1" mnt/etc/fstab
-	sed -i 's/relatime/noatime/g' mnt/etc/fstab
+	echo "# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+/dev/mmcblk0p1  /boot   vfat    defaults        0       0
+"
 }
 
 gen_env() {
@@ -142,6 +145,30 @@ gen_env() {
 
 install_bootloader() {
 	pacman -S --noconfirm raspberrypi-bootloader raspberrypi-bootloader-x
+}
+
+gen_config_txt() {
+	cat > /boot/config.txt <<EOF
+# See /boot/overlays/README for all available options
+
+gpu_mem=64
+initramfs initramfs-linux.img followkernel
+
+# to take advantage of your high speed sd card
+dtparam=sd_overclock=100
+
+# use drm backend
+#dtoverlay=vc4-fkms-v3d
+
+# have a properly sized image
+disable_overscan=1
+
+# for sound over HDMI
+hdmi_drive=2
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+EOF
 }
 
 add_sudo_user() {
@@ -186,7 +213,7 @@ install_sddm() {
 }
 
 install_network_manager() {
-	pacman -S --noconfirm networkmanager
+	pacman -S --noconfirm networkmanager crda wireless_tools net-tools
 	systemctl enable NetworkManager.service
 }
 
@@ -213,19 +240,20 @@ install_xfce4() {
 
 install_xfce4_mods() {
 	install_xfce4
-	aur_install_packages paper-icon-theme
-	pacman -S --noconfirm curl
+	aur_install_packages ttf-roboto-mono
+	pacman -S --noconfirm curl wget
+	wget https://github.com/yangxuan8282/PKGBUILDs/raw/master/pkgs/paper-icon-theme-1.5.0-2-any.pkg.tar.xz
+	pacman -U --noconfirm paper-icon-theme-1.5.0-2-any.pkg.tar.xz && rm -f paper-icon-theme-1.5.0-2-any.pkg.tar.xz
 	mkdir -p /usr/share/wallpapers
 	curl https://img2.goodfon.com/original/2048x1820/3/b6/android-5-0-lollipop-material-5355.jpg \
 					--output /usr/share/wallpapers/android-5-0-lollipop-material-5355.jpg
-	git clone https://github.com/yangxuan8282/dotfiles /home/alarm/src/dotfiles
-	su alarm sh -c "cp -a /home/alarm/src/dotfiles/config/xfce4 /home/alarm/.config/"
-	rm -rf /home/alarm/src
+	su alarm sh -c 'mkdir -p /home/alarm/.config && \
+	wget https://github.com/yangxuan8282/dotfiles/archive/master.tar.gz -O- | \
+		tar -C /home/alarm/.config -xzf - --strip=2 dotfiles-master/config'
 }
 
 install_termite() {
 	pacman -S --noconfirm termite
-	aur_install_packages ttf-roboto-mono
 	mkdir -p /home/alarm/.config/termite
 	cp /etc/xdg/termite/config /home/alarm/.config/termite/config
 	sed -i 's/font = Monospace 9/font = RobotoMono 11/g' /home/alarm/.config/termite/config
@@ -245,8 +273,6 @@ setup_miscs() {
 	echo LANG=en_US.UTF-8 > /etc/locale.conf
 	echo alarm > /etc/hostname
 	echo "127.0.1.1    alarm.localdomain    alarm" | tee --append /etc/hosts
-	chmod +x /usr/local/bin/resize2fs_once
-	systemctl enable resize2fs-once
 }
 
 setup_chroot() {
@@ -262,17 +288,18 @@ setup_chroot() {
 		add_sudo_user
 		install_kernel
 		setup_miscs
+		gen_resize2fs_once_service
 		install_docker
 		enable_systemd_timesyncd
 		pacman -S --noconfirm packer
-		pacman -S --noconfirm nfs-utils
 		install_drivers
 		add_vchiq_udev_rules > /etc/udev/rules.d/raspberrypi.rules
 		install_ssh_server
-		install_termite
+		#install_termite
 		install_xfce4_mods
 		install_browser
 		install_bootloader
+		gen_config_txt
 EOF
 }
 
@@ -296,8 +323,6 @@ ROOT_DEV="$LOOP_DEV"p2
 
 do_format
 
-#setup_mirrors
-
 do_pacstrap
 
 IMGID="$(dd if="${OUTPUT_IMG}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
@@ -305,11 +330,7 @@ IMGID="$(dd if="${OUTPUT_IMG}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut 
 BOOT_PARTUUID="${IMGID}-01"
 ROOT_PARTUUID="${IMGID}-02"
 
-gen_resize2fs_once_systemd > mnt/etc/systemd/system/resize2fs-once.service
-
-gen_resize2fs_once_scripts > mnt/usr/local/bin/resize2fs_once
-
-gen_fstabs
+gen_fstabs > mnt/etc/fstab
 
 gen_env > mnt/root/env_file
 
@@ -318,8 +339,6 @@ pass_function > mnt/root/functions
 setup_chroot
 
 umounts
-
-#delete_mirrors
 
 cat >&2 <<-EOF
 	---
