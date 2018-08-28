@@ -104,12 +104,25 @@ gen_rpi_alpine_image() {
 EOF
 }
 
+gen_xu4_alpine_image() {
+        chroot ${chroot_dir} /bin/sh <<-'EOF'
+                set -xe
+                source /etc/profile
+                apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
+                mkdir -p /root/repos/gen-alpine_rpi
+                apk add ca-certificates wget && update-ca-certificates
+                cd /root/repos/gen-rpi_os
+                ./gen-alpine_xu4.sh -a $(apk --print)
+EOF
+}
+
 mount_devices
 
 case $_distro in
 	             debian | pixel ) gen_rpi_pixel_image ;;
 	arch | archlinuxarm | alarm ) gen_rpi_arch_image ;;
 	                     alpine ) gen_rpi_alpine_image ;;
+	                 xu4-alpine ) gen_xu4_alpine_image ;;
 	                          * ) die 'Invalid distro, please choose from: pixel/debian, arch/archlinuxarm/alarm ';;
 esac
 
