@@ -1,4 +1,4 @@
-Shell scripts to generate os image for raspberry pi
+Shell scripts to generate os image for Raspberry Pi and Odroid XU4
 
 
 
@@ -38,4 +38,16 @@ for alpine aarch64:
 
 ```
 sudo ./gen-chroot.sh alpine aarch64
+```
+
+for XU4 pixel(raspbian):
+
+```
+sudo ./gen-chroot.sh xu4-pixel
+```
+
+for XU4 alpine:
+
+```
+sudo ./gen-chroot.sh xu4-alpine
 ```
