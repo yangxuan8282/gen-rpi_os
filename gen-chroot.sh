@@ -33,7 +33,9 @@ fi
 
 mkdir -p ${chroot_dir}
 
-wget ${mirror}/${branch}/main/${arch}/apk-tools-static-2.10.0-r3.apk
+#wget ${mirror}/${branch}/main/${arch}/apk-tools-static-2.10.0-r3.apk
+
+cp apk-tools-static/${arch}/*.apk .
 
 tar -xzf apk-tools-static-*.apk
 
