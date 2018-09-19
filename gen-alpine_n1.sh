@@ -332,7 +332,8 @@ setup_chroot() {
 		apk --update add sudo
 		add_normal_user
 		echo "phicomm" > /etc/hostname
-		echo "127.0.0.1    phicomm phicomm.localdomain" > /etc/hosts
+		echo "127.0.0.1    localhost" > /etc/hosts
+		echo "127.0.1.1    phicomm phicomm.localdomain" >> /etc/hosts
 		apk add --no-cache dbus eudev haveged openssh util-linux coreutils shadow e2fsprogs e2fsprogs-extra tzdata
 		apk add --no-cache iw wireless-tools crda wpa_supplicant networkmanager
 		apk add --no-cache nano htop bash bash-completion curl tar
