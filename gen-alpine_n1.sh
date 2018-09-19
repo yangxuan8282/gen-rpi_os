@@ -165,6 +165,48 @@ make_bash_fancy() {
 	EOF
 }
 
+gen_motd() {
+
+	cat > /etc/motd << "EOF"
+Welcome to Alpine!
+
+The Alpine Wiki contains a large amount of how-to guides and general
+information about administrating Alpine systems.
+See <http://wiki.alpinelinux.org>.
+
+This img was created by this scripts: https://git.io/fA9FA
+
+For more info please check here: https://git.io/fA9Fh
+
+ ____    __  __  ______   ____     _____                               __  __     _     
+/\  _`\ /\ \/\ \/\__  _\ /\  _`\  /\  __`\  /'\_/`\  /'\_/`\          /\ \/\ \  /' \    
+\ \ \L\ \ \ \_\ \/_/\ \/ \ \ \/\_\\ \ \/\ \/\      \/\      \         \ \ `\\ \/\_, \   
+ \ \ ,__/\ \  _  \ \ \ \  \ \ \/_/_\ \ \ \ \ \ \__\ \ \ \__\ \  _______\ \ , ` \/_/\ \  
+  \ \ \/  \ \ \ \ \ \_\ \__\ \ \L\ \\ \ \_\ \ \ \_/\ \ \ \_/\ \/\______\\ \ \`\ \ \ \ \ 
+   \ \_\   \ \_\ \_\/\_____\\ \____/ \ \_____\ \_\\ \_\ \_\\ \_\/______/ \ \_\ \_\ \ \_\
+    \/_/    \/_/\/_/\/_____/ \/___/   \/_____/\/_/ \/_/\/_/ \/_/          \/_/\/_/  \/_/
+                                                                                        
+EOF
+
+	cat > /etc/profile.d/motd.sh << "EOF"
+#!/bin/bash
+
+my_ip=$(ip route get 1 | awk '{print $NF;exit}')
+
+root_usage=$(df -h / | awk '/\// {print $(NF-1)}')
+
+echo "
+
+
+⚡  MY IP:   ${my_ip}
+
+⚡  DISK USAGE:   ${root_usage}
+
+"
+EOF
+
+}
+
 gen_aml_autoscript() {
 	cat > /boot/aml_autoscript.cmd <<'EOF'
 setenv bootcmd "run start_autoscript; run try_auto_burn; run storeboot;"
@@ -348,6 +390,7 @@ setup_chroot() {
 		ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 		install_kernel
 		gen_resize2fs_once_service
+		gen_motd
 		make_bash_fancy
 		#install_xfce4
 		sync
