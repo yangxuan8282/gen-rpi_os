@@ -244,7 +244,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/raw/master/kernel/alpine/apks/aarch64/linux-s905d-4.18.0-r0.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/raw/master/kernel/alpine/apks/aarch64/linux-s905d-4.18.0-r1.apk"
 
 	wget $url
 	apk add --allow-untrusted --no-cache linux-*.apk
