@@ -177,26 +177,17 @@ See <http://wiki.alpinelinux.org>.
 This img was created by this scripts: https://git.io/fA9FA
 
 For more info please check here: https://git.io/fA9Fh
-
- ____    __  __  ______   ____     _____                               __  __     _     
-/\  _`\ /\ \/\ \/\__  _\ /\  _`\  /\  __`\  /'\_/`\  /'\_/`\          /\ \/\ \  /' \    
-\ \ \L\ \ \ \_\ \/_/\ \/ \ \ \/\_\\ \ \/\ \/\      \/\      \         \ \ `\\ \/\_, \   
- \ \ ,__/\ \  _  \ \ \ \  \ \ \/_/_\ \ \ \ \ \ \__\ \ \ \__\ \  _______\ \ , ` \/_/\ \  
-  \ \ \/  \ \ \ \ \ \_\ \__\ \ \L\ \\ \ \_\ \ \ \_/\ \ \ \_/\ \/\______\\ \ \`\ \ \ \ \ 
-   \ \_\   \ \_\ \_\/\_____\\ \____/ \ \_____\ \_\\ \_\ \_\\ \_\/______/ \ \_\ \_\ \ \_\
-    \/_/    \/_/\/_/\/_____/ \/___/   \/_____/\/_/ \/_/\/_/ \/_/          \/_/\/_/  \/_/
                                                                                         
 EOF
 
 	cat > /etc/profile.d/motd.sh << "EOF"
 #!/bin/bash
 
-my_ip=$(ip route get 1 | awk '{print $NF;exit}')
+my_ip=$(ip route get 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | tail -1)
 
 root_usage=$(df -h / | awk '/\// {print $(NF-1)}')
 
 echo "
-
 
 ⚡  MY IP:   ${my_ip}
 
@@ -205,6 +196,23 @@ echo "
 "
 EOF
 
+}
+
+install_gotty() {
+	local url="https://github.com/yangxuan8282/rpi-aports/raw/master/apks/gotty-1.0.1-r1.apk"
+	wget $url
+	apk add --allow-untrusted *.apk
+	sed -i 's|-u alpine|-u n1|' /etc/init.d/gotty
+	sed -i 's|-w.*|--port 1234 -w ssh n1@localhost|' /etc/init.d/gotty
+	rc-update add gotty default
+	rm -f *.apk
+}
+
+install_create_ap() {
+	local url="https://github.com/yangxuan8282/rpi-aports/raw/master/apks/create_ap-0.4.6-r1.apk"
+	wget $url
+	apk add --allow-untrusted --no-cache *.apk
+	rm -f *.apk
 }
 
 gen_aml_autoscript() {
@@ -244,7 +252,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/raw/master/kernel/alpine/apks/aarch64/linux-s905d-4.18.0-r1.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/20180920/linux-s905d-4.18.0-r2.apk"
 
 	wget $url
 	apk add --allow-untrusted --no-cache linux-*.apk
@@ -392,6 +400,8 @@ setup_chroot() {
 		gen_resize2fs_once_service
 		gen_motd
 		make_bash_fancy
+		install_gotty
+		install_create_ap
 		#install_xfce4
 		sync
 		install_uboot
