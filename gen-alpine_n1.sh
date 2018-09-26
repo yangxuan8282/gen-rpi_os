@@ -252,8 +252,9 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/20180920/linux-s905d-4.18.0-r2.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r3.apk"
 
+	apk add --no-cache uboot-tools
 	wget $url
 	apk add --allow-untrusted --no-cache linux-*.apk
 
@@ -266,15 +267,15 @@ install_uboot() {
 
 	gen_s905_autoscript
 
-	apk add --no-cache uboot-tools
+	#apk add --no-cache uboot-tools
 
 	mkimage -C none -A arm -T script -d /boot/aml_autoscript.cmd /boot/aml_autoscript
 
 	mkimage -C none -A arm -T script -d /boot/s905_autoscript.cmd /boot/s905_autoscript
 
-	mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-s905d /boot/uInitrd
+	#mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-s905d /boot/uInitrd
 
-	apk del uboot-tools
+	#apk del uboot-tools
 
 	gen_uEnv_ini
 
@@ -393,6 +394,7 @@ setup_chroot() {
 		gen_nm_config
 		gen_wpa_supplicant_config
 		echo "options cfg80211 ieee80211_regdom=CN" > /etc/modprobe.d/cfg80211.conf
+		echo "blacklist btsdio" >> /etc/modprobe.d/blacklist.conf
 		gen_syslog_config
 		setup_ntp_server
 		ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
