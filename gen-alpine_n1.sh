@@ -181,17 +181,16 @@ For more info please check here: https://git.io/fA9Fh
 EOF
 
 	cat > /etc/profile.d/motd.sh << "EOF"
-#!/bin/bash
+#!/bin/sh
 
 my_ip=$(ip route get 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | tail -1)
 
 root_usage=$(df -h / | awk '/\// {print $(NF-1)}')
 
 echo "
+  ⚡  MY IP:   ${my_ip}
 
-⚡  MY IP:   ${my_ip}
-
-⚡  DISK USAGE:   ${root_usage}
+  ⚡  DISK USAGE:   ${root_usage}
 
 "
 EOF
