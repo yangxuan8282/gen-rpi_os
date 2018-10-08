@@ -251,7 +251,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r3.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r4.apk"
 
 	apk add --no-cache uboot-tools
 	wget $url
