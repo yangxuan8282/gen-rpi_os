@@ -194,6 +194,8 @@ EOF
 }
 
 install_packer() {
+	pacman -S --noconfirm wget
+
         su alarm sh -c 'cd /tmp && \
         wget https://github.com/archlinuxarm/PKGBUILDs/raw/a1ad4045699093b1cf4911b93cbf8830ee972639/aur/packer/PKGBUILD && \
         makepkg -si --noconfirm'
@@ -247,7 +249,7 @@ install_xfce4() {
 install_xfce4_mods() {
 	install_xfce4
 	aur_install_packages ttf-roboto-mono
-	pacman -S --noconfirm curl wget
+	pacman -S --noconfirm curl
 	wget https://github.com/yangxuan8282/PKGBUILDs/raw/master/pkgs/paper-icon-theme-1.5.0-2-any.pkg.tar.xz
 	pacman -U --noconfirm paper-icon-theme-1.5.0-2-any.pkg.tar.xz && rm -f paper-icon-theme-1.5.0-2-any.pkg.tar.xz
 	mkdir -p /usr/share/wallpapers
