@@ -193,6 +193,12 @@ KERNEL=="mouse*|mice|event*",  MODE="0777"
 EOF
 }
 
+install_packer() {
+        su alarm sh -c 'cd /tmp && \
+        wget https://github.com/archlinuxarm/PKGBUILDs/raw/a1ad4045699093b1cf4911b93cbf8830ee972639/aur/packer/PKGBUILD && \
+        makepkg -si --noconfirm'
+}
+
 aur_install_packages() {
 	su alarm <<-EOF
 	packer -S --noconfirm $@
@@ -291,7 +297,7 @@ setup_chroot() {
 		gen_resize2fs_once_service
 		install_docker
 		enable_systemd_timesyncd
-		pacman -S --noconfirm packer
+		install_packer
 		install_drivers
 		add_vchiq_udev_rules > /etc/udev/rules.d/raspberrypi.rules
 		install_ssh_server
