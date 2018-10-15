@@ -343,7 +343,7 @@ gen_nm_config() {
 	cat > /etc/NetworkManager/conf.d/networkmanager.conf <<EOF
 [main]
 plugins+=ifupdown
-dhcp=dhcpcd
+dhcp=internal
 
 [ifupdown]
 managed=true
@@ -352,7 +352,7 @@ managed=true
 level=INFO
 
 [device-mac-randomization]
-wifi.scan-rand-mac-address=yes
+wifi.scan-rand-mac-address=no
 EOF
 }
 
