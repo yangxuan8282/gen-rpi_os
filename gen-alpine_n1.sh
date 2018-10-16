@@ -161,7 +161,7 @@ make_bash_fancy() {
 	fi
 	EOF'
 	
-	wget https://gist.github.com/yangxuan8282/f2537770982a5dec74095ce4f32de59c/raw/ce003332eff55d50738b726f68a1b493c6867594/.bashrc -P /home/n1
+	wget https://github.com/yangxuan8282/phicomm-n1/raw/master/dotfiles/alpine/config/.bashrc -P /home/n1
 	EOF
 }
 
@@ -251,7 +251,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r4.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r6.apk"
 
 	apk add --no-cache uboot-tools
 	wget $url
@@ -266,19 +266,11 @@ install_uboot() {
 
 	gen_s905_autoscript
 
-	#apk add --no-cache uboot-tools
-
 	mkimage -C none -A arm -T script -d /boot/aml_autoscript.cmd /boot/aml_autoscript
 
 	mkimage -C none -A arm -T script -d /boot/s905_autoscript.cmd /boot/s905_autoscript
 
-	#mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-s905d /boot/uInitrd
-
-	#apk del uboot-tools
-
 	gen_uEnv_ini
-
-	cp /usr/lib/linux*/meson-gxl-s905d-p230.dtb /boot/dtb.img
 
 	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/20180917/u-boot.bin"
 	wget $url
