@@ -47,7 +47,7 @@ done
 #=======================  F u n c t i o n s  =======================#
 
 gen_image() {
-	fallocate -l $(( 350 * 1024 *1024 )) "$OUTPUT_IMG"
+	fallocate -l $(( 600 * 1024 *1024 )) "$OUTPUT_IMG"
 cat > fdisk.cmd <<-EOF
 	o
 	n
@@ -214,35 +214,23 @@ install_create_ap() {
 	rm -f *.apk
 }
 
-gen_aml_autoscript() {
-	cat > /boot/aml_autoscript.cmd <<'EOF'
-setenv bootcmd "run start_autoscript; run try_auto_burn; run storeboot;"
-setenv start_autoscript "if usb start ; then run start_usb_autoscript; fi; run start_mmc_autoscript;"
-setenv start_mmc_autoscript "if fatload mmc 1:a 1020000 s905_autoscript; then autoscr 1020000; fi;"
-setenv start_usb_autoscript "if fatload usb 0 1020000 s905_autoscript; then autoscr 1020000; fi; if fatload usb 1 1020000 s905_autoscript; then autoscr 1020000; fi;"
-setenv upgrade_step "0"
-saveenv
-sleep 1
-reboot
-EOF
-
-}
-
 gen_s905_autoscript() {
 	cat > /boot/s905_autoscript.cmd <<'EOF'
 setenv env_addr    "0x10400000"
 setenv kernel_addr "0x11000000"
 setenv initrd_addr "0x13000000"
 setenv boot_start booti ${kernel_addr} ${initrd_addr} ${dtb_mem_addr}
-if fatload usb 0 ${kernel_addr} vmlinuz-s905d; then if fatload usb 0 ${initrd_addr} uInitrd; then if fatload usb 0 ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload usb 0 ${dtb_mem_addr} dtb.img; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
-if fatload usb 1 ${kernel_addr} vmlinuz-s905d; then if fatload usb 1 ${initrd_addr} uInitrd; then if fatload usb 1 ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload usb 1 ${dtb_mem_addr} dtb.img; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
-if fatload mmc 1:a ${kernel_addr} vmlinuz-s905d; then if fatload mmc 1:a ${initrd_addr} uInitrd; then if fatload mmc 1:a ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload mmc 1:a ${dtb_mem_addr} dtb.img; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
+if fatload usb 0 ${kernel_addr} vmlinuz-amlogic; then if fatload usb 0 ${initrd_addr} uInitrd; then if fatload usb 0 ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload usb 0 ${dtb_mem_addr} ${dtb_name}; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
+if fatload usb 1 ${kernel_addr} vmlinuz-amlogic; then if fatload usb 1 ${initrd_addr} uInitrd; then if fatload usb 1 ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload usb 1 ${dtb_mem_addr} ${dtb_name}; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
+if fatload mmc 1:a ${kernel_addr} vmlinuz-amlogic; then if fatload mmc 1:a ${initrd_addr} uInitrd; then if fatload mmc 1:a ${env_addr} uEnv.ini; then env import -t ${env_addr} ${filesize};run cmdline_keys;fi; if fatload mmc 1:a ${dtb_mem_addr} ${dtb_name}; then run boot_start; else store dtb read ${dtb_mem_addr}; run boot_start;fi;fi;fi;
 EOF
 
+mkimage -C none -A arm -T script -d /boot/s905_autoscript.cmd /boot/s905_autoscript
 }
 
 gen_uEnv_ini() {
 	cat > /boot/uEnv.ini <<'EOF'
+dtb_name=/dtbs/meson-gxl-s905d-phicomm-n1.dtb
 bootargs=root=LABEL=ROOTFS rootflags=data=writeback rw console=ttyAML0,115200n8 console=tty0 no_console_suspend consoleblank=0 fsck.fix=yes fsck.repair=yes net.ifnames=0
 EOF
 
@@ -251,7 +239,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/4.18.7_alpine/linux-s905d-4.18.7-r6.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/alpine_test_build/linux-amlogic-4.18.14-r1.apk"
 
 	apk add --no-cache uboot-tools
 	wget $url
@@ -261,23 +249,17 @@ install_kernel() {
 }
 
 install_uboot() {
-
-	gen_aml_autoscript
-
 	gen_s905_autoscript
-
-	mkimage -C none -A arm -T script -d /boot/aml_autoscript.cmd /boot/aml_autoscript
-
-	mkimage -C none -A arm -T script -d /boot/s905_autoscript.cmd /boot/s905_autoscript
-
 	gen_uEnv_ini
 
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/20180917/u-boot.bin"
-	wget $url
-	dd if=u-boot.bin of=${LOOP_DEV} bs=1 count=442 conv=fsync
-	dd if=u-boot.bin of=${LOOP_DEV} bs=512 skip=1 seek=1 conv=fsync
-	rm -f u-boot.bin
+	mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-amlogic /boot/uInitrd
 
+}
+
+disable_autoneg() {
+	apk add --no-cache ethtool
+	echo "/usr/sbin/ethtool -s eth0 speed 1000 duplex full autoneg off" > /etc/local.d/disable-autoneg.start
+	chmod +x /etc/local.d/disable-autoneg.start
 }
 
 install_xorg_driver() {
@@ -386,6 +368,7 @@ setup_chroot() {
 		gen_wpa_supplicant_config
 		echo "options cfg80211 ieee80211_regdom=CN" > /etc/modprobe.d/cfg80211.conf
 		echo "blacklist btsdio" >> /etc/modprobe.d/blacklist.conf
+		disable_autoneg
 		gen_syslog_config
 		setup_ntp_server
 		ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
