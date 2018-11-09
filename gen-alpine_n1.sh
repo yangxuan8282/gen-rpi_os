@@ -47,7 +47,7 @@ done
 #=======================  F u n c t i o n s  =======================#
 
 gen_image() {
-	fallocate -l $(( 600 * 1024 *1024 )) "$OUTPUT_IMG"
+	fallocate -l $(( 350 * 1024 *1024 )) "$OUTPUT_IMG"
 cat > fdisk.cmd <<-EOF
 	o
 	n
@@ -239,7 +239,7 @@ sed -i "s|root=LABEL=ROOTFS|root=UUID=${ROOT_UUID}|" /boot/uEnv.ini
 }
 
 install_kernel() {
-	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/alpine_test_build/linux-amlogic-4.18.14-r1.apk"
+	local url="https://github.com/yangxuan8282/phicomm-n1/releases/download/alpine_test_build/linux-amlogic-4.18.14-r2.apk"
 
 	apk add --no-cache uboot-tools
 	wget $url
