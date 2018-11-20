@@ -94,6 +94,25 @@ gen_rpi_arch_image() {
 EOF
 }
 
+gen_n1_arch_image() {
+        chroot ${chroot_dir} /bin/sh <<-'EOF'
+                set -xe
+                source /etc/profile
+                apk --update add util-linux dosfstools e2fsprogs vim
+                echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/v3.8/community" >> /etc/apk/repositories
+                apk --update add arch-install-scripts
+                apk add ca-certificates wget && update-ca-certificates
+                mkdir -p /root/repos/gen-arch_rpi
+                mkdir -p /etc/pacman.d
+                wget https://github.com/archlinuxarm/PKGBUILDs/raw/009a908c4bae6b95a82baa89d214c5c22730bea4/core/pacman/pacman.conf -O /etc/pacman.conf
+                sed -i 's/Architecture =.*/Architecture = aarch64/' /etc/pacman.conf
+                echo "Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/\$arch/\$repo" > /etc/pacman.d/mirrorlist
+                mkdir -p /run/shm
+                cd /root/repos/gen-rpi_os
+                ./gen-arch_n1.sh
+EOF
+}
+
 gen_rpi_alpine_image() {
 	chroot ${chroot_dir} /bin/sh <<-'EOF'
 		set -xe
@@ -138,6 +157,7 @@ case $_distro in
 	                     alpine ) gen_rpi_alpine_image ;;
 	                 xu4-alpine ) gen_xu4_alpine_image ;;
                           xu4-pixel ) gen_xu4_pixel_image ;;
+                 n1-arch | n1-alarm ) gen_n1_arch_image ;;
 	                          * ) die 'Invalid distro, please choose from: pixel/debian, arch/archlinuxarm/alarm ';;
 esac
 
