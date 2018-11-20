@@ -146,7 +146,7 @@ gen_env() {
 }
 
 gen_uEnv_ini() {
-	cat > /boot/uEnv.ini <<EOF
+	cat > /boot/uEnv.ini <<'EOF'
 dtb_name=/dtbs/amlogic/meson-gxl-s905d-phicomm-n1.dtb
 bootargs=root=/dev/sda2 rootflags=data=writeback rw console=ttyAML0,115200n8 console=tty0 no_console_suspend consoleblank=0 fsck.fix=yes fsck.repair=yes net.ifnames=0
 EOF
