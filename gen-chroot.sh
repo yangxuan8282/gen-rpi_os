@@ -68,7 +68,6 @@ gen_rpi_pixel_image() {
 		set -xe
 		source /etc/profile
 		apk --update add util-linux dosfstools e2fsprogs debootstrap perl vim
-		mkdir -p /root/repos/gen-pixel_rpi
 		apk add ca-certificates wget && update-ca-certificates
 		cd /root/repos/gen-rpi_os
 		./gen-pixel_rpi.sh
@@ -83,7 +82,6 @@ gen_rpi_arch_image() {
 		echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/v3.8/community" >> /etc/apk/repositories
 		apk --update add arch-install-scripts
 		apk add ca-certificates wget && update-ca-certificates
-		mkdir -p /root/repos/gen-arch_rpi
 		mkdir -p /etc/pacman.d
 		wget https://github.com/archlinuxarm/PKGBUILDs/raw/009a908c4bae6b95a82baa89d214c5c22730bea4/core/pacman/pacman.conf -O /etc/pacman.conf
 		sed -i 's/Architecture =.*/Architecture = armv7h/' /etc/pacman.conf
@@ -102,7 +100,6 @@ gen_n1_arch_image() {
                 echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/v3.8/community" >> /etc/apk/repositories
                 apk --update add arch-install-scripts
                 apk add ca-certificates wget && update-ca-certificates
-                mkdir -p /root/repos/gen-arch_rpi
                 mkdir -p /etc/pacman.d
                 wget https://github.com/archlinuxarm/PKGBUILDs/raw/009a908c4bae6b95a82baa89d214c5c22730bea4/core/pacman/pacman.conf -O /etc/pacman.conf
                 sed -i 's/Architecture =.*/Architecture = aarch64/' /etc/pacman.conf
@@ -118,7 +115,6 @@ gen_rpi_alpine_image() {
 		set -xe
 		source /etc/profile
 		apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
-		mkdir -p /root/repos/gen-alpine_rpi
 		apk add ca-certificates wget && update-ca-certificates
 		cd /root/repos/gen-rpi_os
 		./gen-alpine_rpi.sh -a $(apk --print)
@@ -130,7 +126,6 @@ gen_xu4_alpine_image() {
                 set -xe
                 source /etc/profile
                 apk --update add util-linux dosfstools e2fsprogs vim apk-tools-static
-                mkdir -p /root/repos/gen-alpine_rpi
                 apk add ca-certificates wget && update-ca-certificates
                 cd /root/repos/gen-rpi_os
                 ./gen-alpine_xu4.sh -a $(apk --print)
@@ -142,7 +137,6 @@ gen_xu4_pixel_image() {
                 set -xe
                 source /etc/profile
                 apk --update add util-linux dosfstools e2fsprogs debootstrap perl vim
-                mkdir -p /root/repos/gen-pixel_rpi
                 apk add ca-certificates wget && update-ca-certificates
                 cd /root/repos/gen-rpi_os
                 ./gen-pixel_xu4.sh
