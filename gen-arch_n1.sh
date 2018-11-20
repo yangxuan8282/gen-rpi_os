@@ -210,6 +210,7 @@ aur_install_packages() {
 
 install_drivers() {
 	pacman -S --noconfirm xf86-video-fbdev firmware-raspberrypi haveged
+	systemctl enable haveged
 	systemctl disable bluetooth.target
 }
 
